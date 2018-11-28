@@ -62,7 +62,7 @@ def main():
 
     ### Physics stuff
     space = pymunk.Space()
-    space.gravity = (0.0, -900.0)
+    space.gravity = (0.0, -980.0)
     draw_options = pymunk.pygame_util.DrawOptions(screen)
     # disable the build in debug draw of collision point since we use our own code.
     draw_options.flags = draw_options.flags ^ pymunk.pygame_util.DrawOptions.DRAW_COLLISION_POINTS
@@ -71,8 +71,7 @@ def main():
 
     ### walls
     static_lines = [pymunk.Segment(space.static_body, (11.0, 280.0), (407.0, 246.0), 0.0)
-        , pymunk.Segment(space.static_body, (407.0, 246.0), (407.0, 343.0), 0.0)
-                    ]
+        , pymunk.Segment(space.static_body, (407.0, 246.0), (407.0, 343.0), 0.0)]
     for l in static_lines:
         l.friction = 0.5
     space.add(static_lines)
@@ -99,8 +98,8 @@ def main():
             radius = 25
             inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
             body = pymunk.Body(mass, inertia)
-            x = random.randint(115, 350)
-            body.position = x, 400
+            pos = pygame.mouse.get_pos()
+            body.position =
             shape = pymunk.Circle(body, radius, (0, 0))
             shape.friction = 0.5
             space.add(body, shape)
