@@ -41,7 +41,7 @@ import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
 
-
+print("test")
 def draw_collision(arbiter, space, data):
     for c in arbiter.contact_point_set.points:
         r = max(3, abs(c.distance * 5))
