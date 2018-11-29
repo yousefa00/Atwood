@@ -43,6 +43,7 @@ import pymunk.pygame_util
 
 print("test")
 #testing
+print("testing")
 def draw_collision(arbiter, space, data):
     for c in arbiter.contact_point_set.points:
         r = max(3, abs(c.distance * 5))
@@ -62,19 +63,21 @@ def main():
     running = True
 
     ### Physics stuff
-    space = pymunk.Space()
-    space.gravity = (0.0, -900.0)
+    global space
+    space = pymunk.Space()  # creates a space for the physics
+    space.gravity = (0.0, -900.0)  # sets the gravity of the space
     draw_options = pymunk.pygame_util.DrawOptions(screen)
     # disable the build in debug draw of collision point since we use our own code.
     draw_options.flags = draw_options.flags ^ pymunk.pygame_util.DrawOptions.DRAW_COLLISION_POINTS
     ## Balls
+    global balls
     balls = []
 
     ### walls
     static_lines = [pymunk.Segment(space.static_body, (11.0, 280.0), (407.0, 246.0), 0.0)
         , pymunk.Segment(space.static_body, (407.0, 246.0), (407.0, 343.0), 0.0)
                     ]
-    for l in static_lines:
+    for l in static_lines:  #sets the friction coefficient of the walls
         l.friction = 0.5
     space.add(static_lines)
 
@@ -93,19 +96,21 @@ def main():
             elif event.type == KEYDOWN and event.key == K_p:
                 pygame.image.save(screen, "contact_with_friction.png")
 
-        ticks_to_next_ball -= 1
-        if ticks_to_next_ball <= 0:
-            ticks_to_next_ball = 100
-            mass = 0.1
-            radius = 25
-            inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
-            body = pymunk.Body(mass, inertia)
-            x = random.randint(115, 350)
-            body.position = x, 400
-            shape = pymunk.Circle(body, radius, (0, 0))
-            shape.friction = 0.5
-            space.add(body, shape)
-            balls.append(shape)
+            if event.type == MOUSEBUTTONDOWN:  # when the user presses the 'a' key, a circle will be created
+                add_circle(0.1, 25, 200, 500, 0.5)  # calls the add_circle function to make circle
+        # ticks_to_next_ball -= 1
+        # if ticks_to_next_ball <= 0:
+        #     ticks_to_next_ball = 100
+        #     mass = 0.1
+        #     radius = 25
+        #     inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
+        #     body = pymunk.Body(mass, inertia)
+        #     x = random.randint(115, 350)
+        #     body.position = x, 900
+        #     shape = pymunk.Circle(body, radius, (0, 0))
+        #     shape.friction = 0.5
+        #     space.add(body, shape)
+        #     balls.append(shape)
 
         ### Clear screen
         screen.fill(THECOLORS["white"])
@@ -129,6 +134,17 @@ def main():
         pygame.display.flip()
         clock.tick(50)
         pygame.display.set_caption("fps: " + str(clock.get_fps()))
+
+
+#adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
+def add_circle(mass, radius, xpos, ypos, friction):
+    inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
+    body = pymunk.Body(mass, inertia)
+    body.position = xpos, ypos
+    shape = pymunk.Circle(body, radius, (0, 0))
+    shape.friction = friction
+    space.add(body, shape)
+    balls.append(shape)
 
 
 if __name__ == '__main__':
