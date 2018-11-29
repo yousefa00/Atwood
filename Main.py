@@ -34,6 +34,7 @@ import pymunk.pygame_util
 import math, sys, random
 
 import pygame
+import re
 from pygame.locals import *
 from pygame.color import *
 
@@ -99,7 +100,12 @@ def main():
             inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
             body = pymunk.Body(mass, inertia)
             pos = pygame.mouse.get_pos()
-            body.position =
+            final = str(pos)
+            x = final[final.find('(')+len('('):final.rfind(',')]
+            print(x)
+            y = final[final.find(',') + len(','):final.rfind(')')]
+            print(int(x), int(y))
+            body.position = int(x), (600 - int(y))
             shape = pymunk.Circle(body, radius, (0, 0))
             shape.friction = 0.5
             space.add(body, shape)
