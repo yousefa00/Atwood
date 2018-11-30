@@ -100,6 +100,13 @@ def main():
             elif event.type == KEYDOWN and event.key == K_p:
                 pygame.image.save(screen, "contact_with_friction.png")
 
+            if event.type == MOUSEBUTTONDOWN:
+                add_circle(0.1, 25, 300, 500, 0.5)  # change later?
+
+            # adds a square when the 'A' key is pressed; change around later for better UI
+            if event.type == KEYDOWN and event.key == K_a:
+                add_square(0.1, 50.0, 50.0, 200, 500, 0.5)
+
         ticks_to_next_ball -= 1
         if ticks_to_next_ball <= 0:
             ticks_to_next_ball = 100
@@ -197,6 +204,16 @@ def add_circle(mass, radius, xpos, ypos, friction):
     shape.friction = friction
     space.add(body, shape)
     balls.append(shape)
+
+
+# adds a square to the screen with changeable mass, width, height, x and y positions, and friction coef
+def add_square(mass, width, height, xpos, ypos, friction):
+    inertia = pymunk.moment_for_box(mass, (width, height))
+    body = pymunk.Body(mass, inertia)
+    body.position = xpos, ypos
+    shape = pymunk.Poly.create_box(body, (width, height), 0)  # adding a radius (third param) bevels corners of poly
+    shape.friction = friction
+    space.add(body, shape)
 
 
 if __name__ == '__main__':
