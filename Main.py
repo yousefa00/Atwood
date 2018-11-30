@@ -42,6 +42,8 @@ import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
 
+object_draging = False #object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up).
+
 print("test")
 #testing
 def draw_collision(arbiter, space, data):
@@ -56,6 +58,8 @@ def draw_collision(arbiter, space, data):
 def main():
     global contact
     global shape_to_remove
+    global object_draging
+    global screen
 
     pygame.init()
     screen = pygame.display.set_mode((600, 600))
@@ -138,6 +142,51 @@ def main():
         clock.tick(50)
         pygame.display.set_caption("fps: " + str(clock.get_fps()))
 
+#Added interactive stuff starting here:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            elif event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:  # When even.button == 1, that's referring to a left click
+
+                    # 1 - left click
+                    #
+                    # 2 - middle click
+                    #
+                    # 3 - right click
+                    #
+                    # 4 - scroll up
+                    #
+                    # 5 - scroll down
+                    for ball in balls:
+                        surface = pygame.Surface(screen.get_size())
+                        print ("pos")
+                        print (ball.body.position)
+                        print (pymunk.pygame_util.get_mouse_pos(surface))
+                        #mouse_x, mouse_y = event.pos
+
+                        if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
+                        #if (ball.body.position.x )
+                            space.gravity = (0,0)
+                            object_draging = True
+                            #mouse_x, mouse_y = event.pos
+                            offset_x = ball.x - mouse_x
+                            offset_y = ball.y - mouse_y
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    space.gravity = (0, -980)
+                    object_draging = False
+
+            elif event.type == pygame.MOUSEMOTION:
+                if object_draging:
+                    for ball in balls:
+                        mouse_x, mouse_y = event.pos
+                        ball.x = mouse_x + offset_x
+                        ball.y = mouse_y + offset_y
+
+#Interactive stuff ends here
 
 #adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
 def add_circle(mass, radius, xpos, ypos, friction):
