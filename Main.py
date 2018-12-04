@@ -99,6 +99,8 @@ def main():
                 running = False
             elif event.type == KEYDOWN and event.key == K_p:
                 pygame.image.save(screen, "contact_with_friction.png")
+            elif event.type == KEYDOWN and event.key == K_s:
+                add_ramp(100, 100, 500, 0.1)
 
             if event.type == MOUSEBUTTONDOWN:
                 add_circle(0.1, 25, 300, 500, 0.5)  # change later?
@@ -195,6 +197,7 @@ def main():
 
 #Interactive stuff ends here
 
+
 #adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
 def add_circle(mass, radius, xpos, ypos, friction):
     inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
@@ -215,6 +218,14 @@ def add_square(mass, width, height, xpos, ypos, friction):
     shape.friction = friction
     space.add(body, shape)
 
+
+def add_ramp(mass, xpos, ypos, friction):
+    inertia = pymunk.moment_for_poly(mass, [(0, 0), (100, 0), (0, 100)])
+    body = pymunk.Body(mass, inertia)
+    body.position = xpos, ypos
+    shape = pymunk.Poly(body, [(0, 0), (100, 0), (0, 100)])  # adding a radius (third param) bevels corners of poly
+    shape.friction = friction
+    space.add(body, shape)
 
 if __name__ == '__main__':
     sys.exit(main())
