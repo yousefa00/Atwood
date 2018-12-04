@@ -44,7 +44,7 @@ import pymunk.pygame_util
 
 object_draging = False #object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up).
 
-print("test")
+
 #testing
 def draw_collision(arbiter, space, data):
     for c in arbiter.contact_point_set.points:
@@ -99,7 +99,7 @@ def main():
                 running = False
             # Added interactive stuff starting here:
             elif event.type == MOUSEBUTTONDOWN:
-                if event.button == 1:  # When even.button == 1, that's referring to a left click
+                if event.button == 1:  # When event.button == 1, that's referring to a left click
 
                     # 1 - left click
                     #
@@ -136,38 +136,42 @@ def main():
                         mouse_x, mouse_y = event.pos
                         ball.x = mouse_x + offset_x
                         ball.y = mouse_y + offset_y
-
             # Interactive stuff ends here
+
             elif event.type == KEYDOWN and event.key == K_p:
                 pygame.image.save(screen, "contact_with_friction.png")
             elif event.type == KEYDOWN and event.key == K_s:
                 add_ramp(100, 100, 500, 0.1)
 
             if event.type == MOUSEBUTTONDOWN:
-                add_circle(0.1, 25, 300, 500, 0.5)  # change later?
+                pos = pygame.mouse.get_pos()
+                final = str(pos)
+                x = final[final.find('(') + len('('):final.rfind(',')]
+                y = final[final.find(',') + len(','):final.rfind(')')]
+                add_circle(0.1, 25, x, y, 0.5)
 
             # adds a square when the 'A' key is pressed; change around later for better UI
             if event.type == KEYDOWN and event.key == K_a:
                 add_square(0.1, 50.0, 50.0, 200, 500, 0.5)
 
-        ticks_to_next_ball -= 1
-        if ticks_to_next_ball <= 0:
-            ticks_to_next_ball = 100
-            mass = 0.1
-            radius = 25
-            inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
-            body = pymunk.Body(mass, inertia)
-            pos = pygame.mouse.get_pos()
-            final = str(pos)
-            x = final[final.find('(')+len('('):final.rfind(',')]
-            print(x)
-            y = final[final.find(',') + len(','):final.rfind(')')]
-            print(int(x), int(y))
-            body.position = int(x), (600 - int(y))
-            shape = pymunk.Circle(body, radius, (0, 0))
-            shape.friction = 0.5
-            space.add(body, shape)
-            balls.append(shape)
+        # ticks_to_next_ball -= 1
+        # if ticks_to_next_ball <= 0:
+        #     ticks_to_next_ball = 100
+        #     mass = 0.1
+        #     radius = 25
+        #     inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
+        #     body = pymunk.Body(mass, inertia)
+        #     pos = pygame.mouse.get_pos()
+        #     final = str(pos)
+        #     x = final[final.find('(')+len('('):final.rfind(',')]
+        #     print(x)
+        #     y = final[final.find(',') + len(','):final.rfind(')')]
+        #     print(int(x), int(y))
+        #     body.position = int(x), (600 - int(y))
+        #     shape = pymunk.Circle(body, radius, (0, 0))
+        #     shape.friction = 0.5
+        #     space.add(body, shape)
+        #     balls.append(shape)
 
         ### Clear screen
         screen.fill(THECOLORS["white"])
@@ -192,58 +196,12 @@ def main():
         clock.tick(50)
         pygame.display.set_caption("fps: " + str(clock.get_fps()))
 
-#Added interactive stuff starting here:
-        # for event in pygame.event.get():
-        #     if event.type == pygame.QUIT:
-        #         running = False
-        #
-        #     elif event.type == MOUSEBUTTONDOWN:
-        #         if event.button == 1:  # When even.button == 1, that's referring to a left click
-        #
-        #             # 1 - left click
-        #             #
-        #             # 2 - middle click
-        #             #
-        #             # 3 - right click
-        #             #
-        #             # 4 - scroll up
-        #             #
-        #             # 5 - scroll down
-        #             for ball in balls:
-        #                 surface = pygame.Surface(screen.get_size())
-        #                 print ("pos")
-        #                 print (ball.body.position)
-        #                 print (pymunk.pygame_util.get_mouse_pos(surface))
-        #                 #mouse_x, mouse_y = event.pos
-        #
-        #                 if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
-        #                 #if (ball.body.position.x )
-        #                     space.gravity = (0,0)
-        #                     object_draging = True
-        #                     #mouse_x, mouse_y = event.pos
-        #                     offset_x = ball.x - mouse_x
-        #                     offset_y = ball.y - mouse_y
-        #
-        #     elif event.type == pygame.MOUSEBUTTONUP:
-        #         if event.button == 1:
-        #             space.gravity = (0, -980)
-        #             object_draging = False
-        #
-        #     elif event.type == pygame.MOUSEMOTION:
-        #         if object_draging:
-        #             for ball in balls:
-        #                 mouse_x, mouse_y = event.pos
-        #                 ball.x = mouse_x + offset_x
-        #                 ball.y = mouse_y + offset_y
-
-#Interactive stuff ends here
-
 
 #adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
 def add_circle(mass, radius, xpos, ypos, friction):
     inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
     body = pymunk.Body(mass, inertia)
-    body.position = xpos, ypos
+    body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Circle(body, radius, (0, 0))
     shape.friction = friction
     space.add(body, shape)
