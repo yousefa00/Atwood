@@ -97,6 +97,47 @@ def main():
                 running = False
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 running = False
+            # Added interactive stuff starting here:
+            elif event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:  # When even.button == 1, that's referring to a left click
+
+                    # 1 - left click
+                    #
+                    # 2 - middle click
+                    #
+                    # 3 - right click
+                    #
+                    # 4 - scroll up
+                    #
+                    # 5 - scroll down
+                    for ball in balls:
+                        surface = pygame.Surface(screen.get_size())
+                        print("pos")
+                        print(ball.body.position)
+                        print(pymunk.pygame_util.get_mouse_pos(surface))
+                        # mouse_x, mouse_y = event.pos
+
+                        if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
+                            # if (ball.body.position.x )
+                            space.gravity = (0, 0)
+                            object_draging = True
+                            # mouse_x, mouse_y = event.pos
+                            offset_x = ball.x - mouse_x
+                            offset_y = ball.y - mouse_y
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    space.gravity = (0, -980)
+                    object_draging = False
+
+            elif event.type == pygame.MOUSEMOTION:
+                if object_draging:
+                    for ball in balls:
+                        mouse_x, mouse_y = event.pos
+                        ball.x = mouse_x + offset_x
+                        ball.y = mouse_y + offset_y
+
+            # Interactive stuff ends here
             elif event.type == KEYDOWN and event.key == K_p:
                 pygame.image.save(screen, "contact_with_friction.png")
             elif event.type == KEYDOWN and event.key == K_s:
@@ -152,48 +193,48 @@ def main():
         pygame.display.set_caption("fps: " + str(clock.get_fps()))
 
 #Added interactive stuff starting here:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-            elif event.type == MOUSEBUTTONDOWN:
-                if event.button == 1:  # When even.button == 1, that's referring to a left click
-
-                    # 1 - left click
-                    #
-                    # 2 - middle click
-                    #
-                    # 3 - right click
-                    #
-                    # 4 - scroll up
-                    #
-                    # 5 - scroll down
-                    for ball in balls:
-                        surface = pygame.Surface(screen.get_size())
-                        print ("pos")
-                        print (ball.body.position)
-                        print (pymunk.pygame_util.get_mouse_pos(surface))
-                        #mouse_x, mouse_y = event.pos
-
-                        if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
-                        #if (ball.body.position.x )
-                            space.gravity = (0,0)
-                            object_draging = True
-                            #mouse_x, mouse_y = event.pos
-                            offset_x = ball.x - mouse_x
-                            offset_y = ball.y - mouse_y
-
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
-                    space.gravity = (0, -980)
-                    object_draging = False
-
-            elif event.type == pygame.MOUSEMOTION:
-                if object_draging:
-                    for ball in balls:
-                        mouse_x, mouse_y = event.pos
-                        ball.x = mouse_x + offset_x
-                        ball.y = mouse_y + offset_y
+        # for event in pygame.event.get():
+        #     if event.type == pygame.QUIT:
+        #         running = False
+        #
+        #     elif event.type == MOUSEBUTTONDOWN:
+        #         if event.button == 1:  # When even.button == 1, that's referring to a left click
+        #
+        #             # 1 - left click
+        #             #
+        #             # 2 - middle click
+        #             #
+        #             # 3 - right click
+        #             #
+        #             # 4 - scroll up
+        #             #
+        #             # 5 - scroll down
+        #             for ball in balls:
+        #                 surface = pygame.Surface(screen.get_size())
+        #                 print ("pos")
+        #                 print (ball.body.position)
+        #                 print (pymunk.pygame_util.get_mouse_pos(surface))
+        #                 #mouse_x, mouse_y = event.pos
+        #
+        #                 if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
+        #                 #if (ball.body.position.x )
+        #                     space.gravity = (0,0)
+        #                     object_draging = True
+        #                     #mouse_x, mouse_y = event.pos
+        #                     offset_x = ball.x - mouse_x
+        #                     offset_y = ball.y - mouse_y
+        #
+        #     elif event.type == pygame.MOUSEBUTTONUP:
+        #         if event.button == 1:
+        #             space.gravity = (0, -980)
+        #             object_draging = False
+        #
+        #     elif event.type == pygame.MOUSEMOTION:
+        #         if object_draging:
+        #             for ball in balls:
+        #                 mouse_x, mouse_y = event.pos
+        #                 ball.x = mouse_x + offset_x
+        #                 ball.y = mouse_y + offset_y
 
 #Interactive stuff ends here
 
