@@ -85,7 +85,7 @@ def main():
         l.friction = 0.5
     space.add(static_lines)
 
-    ticks_to_next_ball = 10
+    # ticks_to_next_ball = 10
 
     ch = space.add_collision_handler(0, 0)
     ch.data["surface"] = screen
@@ -141,7 +141,7 @@ def main():
             elif event.type == KEYDOWN and event.key == K_p:
                 pygame.image.save(screen, "contact_with_friction.png")
             elif event.type == KEYDOWN and event.key == K_s:
-                add_ramp(100, 100, 500, 0.1)
+                add_ramp(100, 60, 100, 500, 0.1)
 
             if event.type == MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
@@ -218,13 +218,16 @@ def add_square(mass, width, height, xpos, ypos, friction):
     space.add(body, shape)
 
 
-def add_ramp(mass, xpos, ypos, friction):
-    inertia = pymunk.moment_for_poly(mass, [(0, 0), (100, 0), (0, 100)])
+def add_ramp(mass, degree, xpos, ypos, friction):
+    tan = math.tan((degree * (math.pi / 180)))
+    height = 100 / tan  #height adjusts to make degree applicable
+    inertia = pymunk.moment_for_poly(mass, [(0, 0), (100, 0), (0, height)])  # the length is always 100
     body = pymunk.Body(mass, inertia)
     body.position = xpos, ypos
-    shape = pymunk.Poly(body, [(0, 0), (100, 0), (0, 100)])  # adding a radius (third param) bevels corners of poly
+    shape = pymunk.Poly(body, [(0, 0), (100, 0), (0, height)])  # adding a radius (a third param) bevels corners of poly
     shape.friction = friction
     space.add(body, shape)
+
 
 if __name__ == '__main__':
     sys.exit(main())
