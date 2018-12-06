@@ -25,19 +25,13 @@
 # The link below shows and explains how to drop spheres with gravity playing a role with Pymunk and Pygames interacting.
 # https://github.com/viblo/pymunk/blob/08fb141b81c0240513fc16e276d5ade5b0506512/docs/html/_sources/tutorials/SlideAndPinJoint.rst.txt
 
-import sys, random
-import pygame
-from pygame.locals import *
-import pymunk
 import pymunk.pygame_util
-
-import math, sys, random
+import sys
 
 import pygame
-import re
 from pygame.locals import *
 from pygame.color import *
-
+from pygame import mouse
 import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
@@ -68,6 +62,7 @@ def main():
 
     ### Physics stuff
     global space
+
     space = pymunk.Space()  # creates a space for the physics
     space.gravity = (0.0, -980.0)  # sets the gravity of the space
     draw_options = pymunk.pygame_util.DrawOptions(screen)
@@ -90,6 +85,7 @@ def main():
     ch = space.add_collision_handler(0, 0)
     ch.data["surface"] = screen
     ch.post_solve = draw_collision
+    w, h = pygame.display.get_surface().get_size()
 
     while running:
         for event in pygame.event.get():
@@ -117,13 +113,6 @@ def main():
                         print(pymunk.pygame_util.get_mouse_pos(surface))
                         # mouse_x, mouse_y = event.pos
 
-                        if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
-                            # if (ball.body.position.x )
-                            space.gravity = (0, 0)
-                            object_draging = True
-                            # mouse_x, mouse_y = event.pos
-                            offset_x = ball.x - mouse_x
-                            offset_y = ball.y - mouse_y
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
@@ -134,8 +123,8 @@ def main():
                 if object_draging:
                     for ball in balls:
                         mouse_x, mouse_y = event.pos
-                        ball.x = mouse_x + offset_x
-                        ball.y = mouse_y + offset_y
+                        ball.x = mouse_x
+                        ball.y = mouse_y
             # Interactive stuff ends here
 
             elif event.type == KEYDOWN and event.key == K_p:
@@ -144,11 +133,13 @@ def main():
                 add_ramp(100, 100, 500, 0.1)
 
             if event.type == MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                final = str(pos)
-                x = final[final.find('(') + len('('):final.rfind(',')]
-                y = final[final.find(',') + len(','):final.rfind(')')]
+                mouse_pos = mouse.get_pos()
+                x = pygame.mouse.get_pos()[0]
+                y = pygame.mouse.get_pos()[1]
+
                 add_circle(0.1, 25, x, y, 0.5)
+                if rect.collidepoint(mouse_pos):
+                    print("in")
 
             # adds a square when the 'A' key is pressed; change around later for better UI
             if event.type == KEYDOWN and event.key == K_a:
@@ -178,6 +169,8 @@ def main():
 
         ### Draw stuff
         space.debug_draw(draw_options)
+        rect = Rect(150, 450, 100, 50)
+        pygame.draw.rect(screen, THECOLORS["green"], (150, 450, 100, 50))
 
         balls_to_remove = []
         for ball in balls:
@@ -192,6 +185,7 @@ def main():
             space.step(dt)
 
         ### Flip screen
+
         pygame.display.flip()
         clock.tick(50)
         pygame.display.set_caption("fps: " + str(clock.get_fps()))
