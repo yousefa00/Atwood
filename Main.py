@@ -43,7 +43,7 @@ from pymunk import Vec2d
 import pymunk.pygame_util
 
 object_draging = False #object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up).
-
+runonce = False
 
 #testing
 def draw_collision(arbiter, space, data):
@@ -92,6 +92,7 @@ def main():
     ch.post_solve = draw_collision
 
     while running:
+        global ball
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
@@ -112,18 +113,20 @@ def main():
                     # 5 - scroll down
                     for ball in balls:
                         surface = pygame.Surface(screen.get_size())
-                        print("pos")
-                        print(ball.body.position)
-                        print(pymunk.pygame_util.get_mouse_pos(surface))
+                        # print("pos")
+                        # print(ball.body.position)
+                        # print(pymunk.pygame_util.get_mouse_pos(surface))
                         # mouse_x, mouse_y = event.pos
-
-                        if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
-                            # if (ball.body.position.x )
+                        #pygame.mouse.get_pos().
+                        #body.position = int(xpos), (600 - int(ypos))
+                        #if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
+                        #if (600- ball.body.position.y) == mouse_y && :
+                        mouse_x, mouse_y = event.pos
+                        #if (ball.body.position.x, 600- ball.body.position.y == mouse_x, mouse_y):
+                        if (math.sqrt(math.pow(ball.body.position.x - mouse_x, 2) + math.pow((600-ball.body.position.y) - mouse_y, 2))) <= 25:
                             space.gravity = (0, 0)
                             object_draging = True
                             # mouse_x, mouse_y = event.pos
-                            offset_x = ball.x - mouse_x
-                            offset_y = ball.y - mouse_y
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
@@ -132,10 +135,16 @@ def main():
 
             elif event.type == pygame.MOUSEMOTION:
                 if object_draging:
-                    for ball in balls:
-                        mouse_x, mouse_y = event.pos
-                        ball.x = mouse_x + offset_x
-                        ball.y = mouse_y + offset_y
+                    mouse_x, mouse_y = event.pos
+                    offset_x = ball.body.position.x - mouse_x
+                    offset_y = ball.body.position.y - mouse_y
+                    ball.body.position.x = mouse_x + offset_x
+                    ball.body.position.y = mouse_y + offset_y
+                    space.remove(ball)
+                    balls.remove(ball)
+                    add_circle(0.1, 25, mouse_x, mouse_y, 0.5)
+
+
             # Interactive stuff ends here
 
             elif event.type == KEYDOWN and event.key == K_p:
@@ -143,12 +152,17 @@ def main():
             elif event.type == KEYDOWN and event.key == K_s:
                 add_ramp(100, 100, 500, 0.1)
 
+            global runonce
             if event.type == MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                final = str(pos)
-                x = final[final.find('(') + len('('):final.rfind(',')]
-                y = final[final.find(',') + len(','):final.rfind(')')]
-                add_circle(0.1, 25, x, y, 0.5)
+                if runonce is False and (object_draging is False):
+                    pos = pygame.mouse.get_pos()
+                    final = str(pos)
+                    x = final[final.find('(') + len('('):final.rfind(',')]
+                    y = final[final.find(',') + len(','):final.rfind(')')]
+                    add_circle(0.1, 25, x, y, 0.5)
+
+
+
 
             # adds a square when the 'A' key is pressed; change around later for better UI
             if event.type == KEYDOWN and event.key == K_a:
@@ -178,6 +192,7 @@ def main():
 
         ### Draw stuff
         space.debug_draw(draw_options)
+
 
         balls_to_remove = []
         for ball in balls:
