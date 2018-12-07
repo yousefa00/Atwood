@@ -60,6 +60,8 @@ def main():
     global shape_to_remove
     global object_draging
     global screen
+    global balls
+    global space
 
     pygame.init()
     screen = pygame.display.set_mode((600, 600))
@@ -67,14 +69,12 @@ def main():
     running = True
 
     ### Physics stuff
-    global space
     space = pymunk.Space()  # creates a space for the physics
     space.gravity = (0.0, -980.0)  # sets the gravity of the space
     draw_options = pymunk.pygame_util.DrawOptions(screen)
     # disable the build in debug draw of collision point since we use our own code.
     draw_options.flags = draw_options.flags ^ pymunk.pygame_util.DrawOptions.DRAW_COLLISION_POINTS
     ## Balls
-    global balls
     balls = []
 
     ### walls
@@ -85,7 +85,7 @@ def main():
         l.friction = 0.5
     space.add(static_lines)
 
-    ticks_to_next_ball = 10
+    # ticks_to_next_ball = 10
 
     ch = space.add_collision_handler(0, 0)
     ch.data["surface"] = screen
@@ -150,7 +150,11 @@ def main():
             elif event.type == KEYDOWN and event.key == K_p:
                 pygame.image.save(screen, "contact_with_friction.png")
             elif event.type == KEYDOWN and event.key == K_s:
-                add_ramp(100, 100, 500, 0.1)
+                pos = pygame.mouse.get_pos()
+                final = str(pos)
+                x = final[final.find('(') + len('('):final.rfind(',')]
+                y = final[final.find(',') + len(','):final.rfind(')')]
+                add_ramp(100, 45, x, y, 0.1)
 
             global runonce
             if event.type == MOUSEBUTTONDOWN:
@@ -166,7 +170,11 @@ def main():
 
             # adds a square when the 'A' key is pressed; change around later for better UI
             if event.type == KEYDOWN and event.key == K_a:
-                add_square(0.1, 50.0, 50.0, 200, 500, 0.5)
+                pos = pygame.mouse.get_pos()
+                final = str(pos)
+                x = final[final.find('(') + len('('):final.rfind(',')]
+                y = final[final.find(',') + len(','):final.rfind(')')]
+                add_square(0.1, 50.0, 50.0, x, y, 0.5)
 
         # ticks_to_next_ball -= 1
         # if ticks_to_next_ball <= 0:
@@ -227,19 +235,22 @@ def add_circle(mass, radius, xpos, ypos, friction):
 def add_square(mass, width, height, xpos, ypos, friction):
     inertia = pymunk.moment_for_box(mass, (width, height))
     body = pymunk.Body(mass, inertia)
-    body.position = xpos, ypos
+    body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Poly.create_box(body, (width, height), 0)  # adding a radius (third param) bevels corners of poly
     shape.friction = friction
     space.add(body, shape)
 
 
-def add_ramp(mass, xpos, ypos, friction):
-    inertia = pymunk.moment_for_poly(mass, [(0, 0), (100, 0), (0, 100)])
+def add_ramp(mass, degree, xpos, ypos, friction):
+    tan = math.tan((degree * (math.pi / 180)))
+    height = 100 / tan  #height adjusts to make degree applicable
+    inertia = pymunk.moment_for_poly(mass, [(0, 0), (100, 0), (0, height)], (0, 0), 0)  # the length is always 100
     body = pymunk.Body(mass, inertia)
-    body.position = xpos, ypos
-    shape = pymunk.Poly(body, [(0, 0), (100, 0), (0, 100)])  # adding a radius (third param) bevels corners of poly
+    body.position = int(xpos), (600 - int(ypos))
+    shape = pymunk.Poly(body, [(0, 0), (100, 0), (0, height)])  # adding a radius (a third param) bevels corners of poly
     shape.friction = friction
     space.add(body, shape)
+
 
 if __name__ == '__main__':
     sys.exit(main())
