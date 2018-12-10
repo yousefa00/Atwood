@@ -36,10 +36,10 @@ import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
 
-object_draging = False #object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up).
+object_draging = False  # object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up).
 
 
-#testing
+# testing
 def draw_collision(arbiter, space, data):
     for c in arbiter.contact_point_set.points:
         r = max(3, abs(c.distance * 5))
@@ -54,6 +54,8 @@ def main():
     global shape_to_remove
     global object_draging
     global screen
+    global numGrav
+    numGrav = 1
 
     pygame.init()
     screen = pygame.display.set_mode((600, 600))
@@ -64,7 +66,7 @@ def main():
     global space
 
     space = pymunk.Space()  # creates a space for the physics
-    space.gravity = (0.0, -980.0)  # sets the gravity of the space
+
     draw_options = pymunk.pygame_util.DrawOptions(screen)
     # disable the build in debug draw of collision point since we use our own code.
     draw_options.flags = draw_options.flags ^ pymunk.pygame_util.DrawOptions.DRAW_COLLISION_POINTS
@@ -116,7 +118,6 @@ def main():
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
-                    space.gravity = (0, -980)
                     object_draging = False
 
             elif event.type == pygame.MOUSEMOTION:
@@ -139,7 +140,12 @@ def main():
 
                 add_circle(0.1, 25, x, y, 0.5)
                 if rect.collidepoint(mouse_pos):
-                    print("in")
+                    if numGrav == 1:
+                        space.gravity = (0.0, -980.0)  # sets the gravity of the space
+                        numGrav *= -1
+                    else:
+                        space.gravity = (0.0, 0)  # sets the gravity of the space
+                        numGrav *= -1
 
             # adds a square when the 'A' key is pressed; change around later for better UI
             if event.type == KEYDOWN and event.key == K_a:
@@ -191,7 +197,7 @@ def main():
         pygame.display.set_caption("fps: " + str(clock.get_fps()))
 
 
-#adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
+# adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
 def add_circle(mass, radius, xpos, ypos, friction):
     inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
     body = pymunk.Body(mass, inertia)
@@ -219,6 +225,7 @@ def add_ramp(mass, xpos, ypos, friction):
     shape = pymunk.Poly(body, [(0, 0), (100, 0), (0, 100)])  # adding a radius (third param) bevels corners of poly
     shape.friction = friction
     space.add(body, shape)
+
 
 if __name__ == '__main__':
     sys.exit(main())
