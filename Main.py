@@ -25,10 +25,16 @@
 # The link below shows and explains how to drop spheres with gravity playing a role with Pymunk and Pygames interacting.
 # https://github.com/viblo/pymunk/blob/08fb141b81c0240513fc16e276d5ade5b0506512/docs/html/_sources/tutorials/SlideAndPinJoint.rst.txt
 
+import sys, random
+import pygame
+from pygame.locals import *
+import pymunk
 import pymunk.pygame_util
-import sys
+
+import math, sys, random
 
 import pygame
+import re
 from pygame.locals import *
 from pygame.color import *
 from pygame import mouse
@@ -36,10 +42,10 @@ import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
 
-object_draging = False  # object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up).
+object_draging = False #object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up).
+runonce = False
 
-
-# testing
+#testing
 def draw_collision(arbiter, space, data):
     for c in arbiter.contact_point_set.points:
         r = max(3, abs(c.distance * 5))
@@ -56,6 +62,8 @@ def main():
     global screen
     global numGrav
     numGrav = 1
+    global balls
+    global space
 
     pygame.init()
     screen = pygame.display.set_mode((600, 600))
@@ -64,14 +72,12 @@ def main():
 
     ### Physics stuff
     global space
-
     space = pymunk.Space()  # creates a space for the physics
 
     draw_options = pymunk.pygame_util.DrawOptions(screen)
     # disable the build in debug draw of collision point since we use our own code.
     draw_options.flags = draw_options.flags ^ pymunk.pygame_util.DrawOptions.DRAW_COLLISION_POINTS
     ## Balls
-    global balls
     balls = []
 
     ### walls
@@ -82,7 +88,7 @@ def main():
         l.friction = 0.5
     space.add(static_lines)
 
-    ticks_to_next_ball = 10
+    # ticks_to_next_ball = 10
 
     ch = space.add_collision_handler(0, 0)
     ch.data["surface"] = screen
@@ -90,6 +96,7 @@ def main():
     w, h = pygame.display.get_surface().get_size()
 
     while running:
+        global ball
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
@@ -110,11 +117,20 @@ def main():
                     # 5 - scroll down
                     for ball in balls:
                         surface = pygame.Surface(screen.get_size())
-                        print("pos")
-                        print(ball.body.position)
-                        print(pymunk.pygame_util.get_mouse_pos(surface))
+                        # print("pos")
+                        # print(ball.body.position)
+                        # print(pymunk.pygame_util.get_mouse_pos(surface))
                         # mouse_x, mouse_y = event.pos
-
+                        #pygame.mouse.get_pos().
+                        #body.position = int(xpos), (600 - int(ypos))
+                        #if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
+                        #if (600- ball.body.position.y) == mouse_y && :
+                        mouse_x, mouse_y = event.pos
+                        #if (ball.body.position.x, 600- ball.body.position.y == mouse_x, mouse_y):
+                        if (math.sqrt(math.pow(ball.body.position.x - mouse_x, 2) + math.pow((600-ball.body.position.y) - mouse_y, 2))) <= 25:
+                            space.gravity = (0, 0)
+                            object_draging = True
+                            # mouse_x, mouse_y = event.pos
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
@@ -122,18 +138,35 @@ def main():
 
             elif event.type == pygame.MOUSEMOTION:
                 if object_draging:
-                    for ball in balls:
-                        mouse_x, mouse_y = event.pos
-                        ball.x = mouse_x
-                        ball.y = mouse_y
+                    mouse_x, mouse_y = event.pos
+                    offset_x = ball.body.position.x - mouse_x
+                    offset_y = ball.body.position.y - mouse_y
+                    ball.body.position.x = mouse_x + offset_x
+                    ball.body.position.y = mouse_y + offset_y
+                    space.remove(ball)
+                    balls.remove(ball)
+                    add_circle(0.1, 25, mouse_x, mouse_y, 0.5)
+
+
             # Interactive stuff ends here
 
             elif event.type == KEYDOWN and event.key == K_p:
                 pygame.image.save(screen, "contact_with_friction.png")
             elif event.type == KEYDOWN and event.key == K_s:
-                add_ramp(100, 100, 500, 0.1)
+                pos = pygame.mouse.get_pos()
+                final = str(pos)
+                x = final[final.find('(') + len('('):final.rfind(',')]
+                y = final[final.find(',') + len(','):final.rfind(')')]
+                add_ramp(100, 45, x, y, 0.1)
 
+            global runonce
             if event.type == MOUSEBUTTONDOWN:
+                if runonce is False and (object_draging is False):
+                    pos = pygame.mouse.get_pos()
+                    final = str(pos)
+                    x = final[final.find('(') + len('('):final.rfind(',')]
+                    y = final[final.find(',') + len(','):final.rfind(')')]
+                    add_circle(0.1, 25, x, y, 0.5)
                 mouse_pos = mouse.get_pos()
                 x = pygame.mouse.get_pos()[0]
                 y = pygame.mouse.get_pos()[1]
@@ -149,7 +182,11 @@ def main():
 
             # adds a square when the 'A' key is pressed; change around later for better UI
             if event.type == KEYDOWN and event.key == K_a:
-                add_square(0.1, 50.0, 50.0, 200, 500, 0.5)
+                pos = pygame.mouse.get_pos()
+                final = str(pos)
+                x = final[final.find('(') + len('('):final.rfind(',')]
+                y = final[final.find(',') + len(','):final.rfind(')')]
+                add_square(0.1, 50.0, 50.0, x, y, 0.5)
 
         # ticks_to_next_ball -= 1
         # if ticks_to_next_ball <= 0:
@@ -191,13 +228,12 @@ def main():
             space.step(dt)
 
         ### Flip screen
-
         pygame.display.flip()
         clock.tick(50)
         pygame.display.set_caption("fps: " + str(clock.get_fps()))
 
 
-# adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
+#adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
 def add_circle(mass, radius, xpos, ypos, friction):
     inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
     body = pymunk.Body(mass, inertia)
@@ -212,17 +248,19 @@ def add_circle(mass, radius, xpos, ypos, friction):
 def add_square(mass, width, height, xpos, ypos, friction):
     inertia = pymunk.moment_for_box(mass, (width, height))
     body = pymunk.Body(mass, inertia)
-    body.position = xpos, ypos
+    body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Poly.create_box(body, (width, height), 0)  # adding a radius (third param) bevels corners of poly
     shape.friction = friction
     space.add(body, shape)
 
 
-def add_ramp(mass, xpos, ypos, friction):
-    inertia = pymunk.moment_for_poly(mass, [(0, 0), (100, 0), (0, 100)])
+def add_ramp(mass, degree, xpos, ypos, friction):
+    tan = math.tan((degree * (math.pi / 180)))
+    height = 100 / tan  #height adjusts to make degree applicable
+    inertia = pymunk.moment_for_poly(mass, [(0, 0), (100, 0), (0, height)], (0, 0), 0)  # the length is always 100
     body = pymunk.Body(mass, inertia)
-    body.position = xpos, ypos
-    shape = pymunk.Poly(body, [(0, 0), (100, 0), (0, 100)])  # adding a radius (third param) bevels corners of poly
+    body.position = int(xpos), (600 - int(ypos))
+    shape = pymunk.Poly(body, [(0, 0), (100, 0), (0, height)])  # adding a radius (a third param) bevels corners of poly
     shape.friction = friction
     space.add(body, shape)
 
