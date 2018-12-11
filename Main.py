@@ -81,8 +81,8 @@ def main():
     balls = []
 
     ### walls
-    static_lines = [pymunk.Segment(space.static_body, (11.0, 280.0), (407.0, 246.0), 0.0)
-        , pymunk.Segment(space.static_body, (407.0, 246.0), (407.0, 343.0), 0.0)
+    static_lines = [pymunk.Segment(space.static_body, (0, 5), (600, 5), 0)
+        , pymunk.Segment(space.static_body, (595, 600), (595, 0), 0)
                     ]
     for l in static_lines:
         l.friction = 0.5
@@ -115,22 +115,40 @@ def main():
                     # 4 - scroll up
                     #
                     # 5 - scroll down
-                    for ball in balls:
-                        surface = pygame.Surface(screen.get_size())
-                        # print("pos")
-                        # print(ball.body.position)
-                        # print(pymunk.pygame_util.get_mouse_pos(surface))
-                        # mouse_x, mouse_y = event.pos
-                        #pygame.mouse.get_pos().
-                        #body.position = int(xpos), (600 - int(ypos))
-                        #if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
-                        #if (600- ball.body.position.y) == mouse_y && :
-                        mouse_x, mouse_y = event.pos
-                        #if (ball.body.position.x, 600- ball.body.position.y == mouse_x, mouse_y):
-                        if (math.sqrt(math.pow(ball.body.position.x - mouse_x, 2) + math.pow((600-ball.body.position.y) - mouse_y, 2))) <= 25:
-                            space.gravity = (0, 0)
-                            object_draging = True
-                            # mouse_x, mouse_y = event.pos
+                    if event.type == MOUSEBUTTONDOWN:
+                        mouse_pos = mouse.get_pos()
+                        x = pygame.mouse.get_pos()[0]
+                        y = pygame.mouse.get_pos()[1]
+                        if rect.collidepoint(mouse_pos):
+                            if numGrav == 1:
+                                space.gravity = (0.0, -980.0)  # sets the gravity of the space
+                                numGrav *= -1
+                            else:
+                                space.gravity = (0.0, 0)  # sets the gravity of the space
+                                numGrav *= -1
+                        else:
+                            if runonce is False and (object_draging is False):
+                                pos = pygame.mouse.get_pos()
+                                final = str(pos)
+                                x = final[final.find('(') + len('('):final.rfind(',')]
+                                y = final[final.find(',') + len(','):final.rfind(')')]
+                                add_circle(0.1, 25, x, y, 0.5)
+                            for ball in balls:
+                                surface = pygame.Surface(screen.get_size())
+                                # print("pos")
+                                # print(ball.body.position)
+                                # print(pymunk.pygame_util.get_mouse_pos(surface))
+                                # mouse_x, mouse_y = event.pos
+                                #pygame.mouse.get_pos().
+                                #body.position = int(xpos), (600 - int(ypos))
+                                #if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
+                                #if (600- ball.body.position.y) == mouse_y && :
+                                mouse_x, mouse_y = event.pos
+                                #if (ball.body.position.x, 600- ball.body.position.y == mouse_x, mouse_y):
+                                if (math.sqrt(math.pow(ball.body.position.x - mouse_x, 2) + math.pow((600-ball.body.position.y) - mouse_y, 2))) <= 25:
+                                    object_draging = True
+                                    # mouse_x, mouse_y = event.pos
+                                    # mouse_x, mouse_y = event.pos
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
@@ -159,26 +177,8 @@ def main():
                 y = final[final.find(',') + len(','):final.rfind(')')]
                 add_ramp(100, 45, x, y, 0.1)
 
-            global runonce
-            if event.type == MOUSEBUTTONDOWN:
-                if runonce is False and (object_draging is False):
-                    pos = pygame.mouse.get_pos()
-                    final = str(pos)
-                    x = final[final.find('(') + len('('):final.rfind(',')]
-                    y = final[final.find(',') + len(','):final.rfind(')')]
-                    add_circle(0.1, 25, x, y, 0.5)
-                mouse_pos = mouse.get_pos()
-                x = pygame.mouse.get_pos()[0]
-                y = pygame.mouse.get_pos()[1]
+            # global runonce
 
-                add_circle(0.1, 25, x, y, 0.5)
-                if rect.collidepoint(mouse_pos):
-                    if numGrav == 1:
-                        space.gravity = (0.0, -980.0)  # sets the gravity of the space
-                        numGrav *= -1
-                    else:
-                        space.gravity = (0.0, 0)  # sets the gravity of the space
-                        numGrav *= -1
 
             # adds a square when the 'A' key is pressed; change around later for better UI
             if event.type == KEYDOWN and event.key == K_a:
@@ -215,12 +215,12 @@ def main():
         rect = Rect(150, 450, 100, 50)
         pygame.draw.rect(screen, THECOLORS["green"], (150, 450, 100, 50))
 
-        balls_to_remove = []
-        for ball in balls:
-            if ball.body.position.y < 200: balls_to_remove.append(ball)
-        for ball in balls_to_remove:
-            space.remove(ball, ball.body)
-            balls.remove(ball)
+        # balls_to_remove = []
+        # for ball in balls:
+        #     if ball.body.position.y < 200: balls_to_remove.append(ball)
+        # for ball in balls_to_remove:
+        #     space.remove(ball, ball.body)
+        #     balls.remove(ball)
 
         ### Update physics
         dt = 1.0 / 60.0
