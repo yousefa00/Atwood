@@ -42,7 +42,8 @@ import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
 
-object_draging = False #object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up).
+object_draging = False #object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up)
+square_draging = False #refers to square object being dragged
 runonce = False
 
 #testing
@@ -63,6 +64,7 @@ def main():
     global numGrav
     numGrav = 1
     global balls
+    global squares
     global space
 
     pygame.init()
@@ -79,6 +81,7 @@ def main():
     draw_options.flags = draw_options.flags ^ pymunk.pygame_util.DrawOptions.DRAW_COLLISION_POINTS
     ## Balls
     balls = []
+    squares = []
 
     ### walls
     static_lines = [pymunk.Segment(space.static_body, (0, 5), (600, 5), 0)
@@ -97,6 +100,8 @@ def main():
 
     while running:
         global ball
+        global square
+        global index_dragging
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
@@ -115,6 +120,35 @@ def main():
                     # 4 - scroll up
                     #
                     # 5 - scroll down
+                    index = -1
+                    squareIndex = -1
+                    for ball in balls:
+                        surface = pygame.Surface(screen.get_size())
+                        # print("pos")
+                        # print(ball.body.position)
+                        # print(pymunk.pygame_util.get_mouse_pos(surface))
+                        # mouse_x, mouse_y = event.pos
+                        #pygame.mouse.get_pos().
+                        #body.position = int(xpos), (600 - int(ypos))
+                        #if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
+                        #if (600- ball.body.position.y) == mouse_y && :
+                        mouse_x, mouse_y = event.pos
+                        index += 1
+                        #if (ball.body.position.x, 600- ball.body.position.y == mouse_x, mouse_y):
+                        if (math.sqrt(math.pow(ball.body.position.x - mouse_x, 2) + math.pow((600-ball.body.position.y) - mouse_y, 2))) <= 25:
+                            index_dragging = index  # saves the index of the ball that is clicked
+                            space.gravity = (0, 0)
+                            object_draging = True
+                            # mouse_x, mouse_y = event.pos
+
+                    for square in squares:
+                        mouse_x, mouse_y = event.pos
+                        squareIndex += 1
+                        if square.body.position.x:
+                            index_dragging = index  # saves the index of the ball that is clicked
+                            space.gravity = (0, 0)
+                            object_draging = True
+                            # mouse_x, mouse_y = event.pos
                     if event.type == MOUSEBUTTONDOWN:
                         mouse_pos = mouse.get_pos()
                         x = pygame.mouse.get_pos()[0]
@@ -157,13 +191,13 @@ def main():
             elif event.type == pygame.MOUSEMOTION:
                 if object_draging:
                     mouse_x, mouse_y = event.pos
-                    offset_x = ball.body.position.x - mouse_x
-                    offset_y = ball.body.position.y - mouse_y
-                    ball.body.position.x = mouse_x + offset_x
-                    ball.body.position.y = mouse_y + offset_y
-                    space.remove(ball)
-                    balls.remove(ball)
-                    add_circle(0.1, 25, mouse_x, mouse_y, 0.5)
+                    offset_x = balls[index_dragging].body.position.x - mouse_x
+                    offset_y = balls[index_dragging].body.position.y - mouse_y
+                    balls[index_dragging].body.position.x = mouse_x + offset_x
+                    balls[index_dragging].body.position.y = mouse_y + offset_y
+                    space.remove(balls[index_dragging])
+                    balls.remove(balls[index_dragging])
+                    add_circle(0.1, 25, mouse_x, mouse_y, 0.5, index_dragging)
 
 
             # Interactive stuff ends here
@@ -221,6 +255,24 @@ def main():
         # for ball in balls_to_remove:
         #     space.remove(ball, ball.body)
         #     balls.remove(ball)
+        #Draws text onto the rectangle GO button
+        def text_objects(text, font):
+            textSurface = font.render(text, True, THECOLORS["black"])
+            return textSurface, textSurface.get_rect()
+
+        smallText = pygame.font.Font("freesansbold.ttf", 20)
+        textSurf, textRect = text_objects("GO!", smallText)
+        textRect.center = ((150 + (100 / 2)), (450 + (50 / 2)))
+        screen.blit(textSurf, textRect)
+
+
+
+        balls_to_remove = []
+        for ball in balls:
+            if ball.body.position.y < 200: balls_to_remove.append(ball)
+        for ball in balls_to_remove:
+            space.remove(ball, ball.body)
+            balls.remove(ball)
 
         ### Update physics
         dt = 1.0 / 60.0
@@ -234,14 +286,14 @@ def main():
 
 
 #adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
-def add_circle(mass, radius, xpos, ypos, friction):
+def add_circle(mass, radius, xpos, ypos, friction, index):
     inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
     body = pymunk.Body(mass, inertia)
     body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Circle(body, radius, (0, 0))
     shape.friction = friction
     space.add(body, shape)
-    balls.append(shape)
+    balls.insert(index, shape)
 
 
 # adds a square to the screen with changeable mass, width, height, x and y positions, and friction coef
@@ -254,6 +306,7 @@ def add_square(mass, width, height, xpos, ypos, friction):
     space.add(body, shape)
 
 
+# adds a right triangle to the screen with changeable mass, degree, x and y position, and friction coef
 def add_ramp(mass, degree, xpos, ypos, friction):
     tan = math.tan((degree * (math.pi / 180)))
     height = 100 / tan  #height adjusts to make degree applicable
