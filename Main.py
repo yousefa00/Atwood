@@ -60,6 +60,7 @@ def main():
     global contact
     global shape_to_remove
     global object_draging
+    global square_draging
     global screen
     global numGrav
     numGrav = 1
@@ -102,6 +103,7 @@ def main():
         global ball
         global square
         global index_dragging
+        global square_index_dragging
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
@@ -144,15 +146,16 @@ def main():
                     for square in squares:
                         mouse_x, mouse_y = event.pos
                         squareIndex += 1
-                        if square.body.position.x:
-                            index_dragging = index  # saves the index of the ball that is clicked
+                        if mouse_x >= square.body.position.x and mouse_x <= square.body.position.x + 50 and mouse_y >= (600-square.body.position.y) and mouse_y <= (600-square.body.position.y) + 50:
+                            square_index_dragging = index  # saves the index of the ball that is clicked
                             space.gravity = (0, 0)
-                            object_draging = True
+                            square_draging = True
                             # mouse_x, mouse_y = event.pos
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
                     object_draging = False
+                    square_draging = False
 
             elif event.type == pygame.MOUSEMOTION:
                 if object_draging:
@@ -164,6 +167,9 @@ def main():
                     space.remove(balls[index_dragging])
                     balls.remove(balls[index_dragging])
                     add_circle(0.1, 25, mouse_x, mouse_y, 0.5, index_dragging)
+
+                #if square_draging:
+
 
 
             # Interactive stuff ends here
@@ -204,7 +210,7 @@ def main():
                 final = str(pos)
                 x = final[final.find('(') + len('('):final.rfind(',')]
                 y = final[final.find(',') + len(','):final.rfind(')')]
-                add_square(0.1, 50.0, 50.0, x, y, 0.5)
+                add_square(0.1, 50.0, 50.0, x, y, 0.5, len(squares))
 
         # ticks_to_next_ball -= 1
         # if ticks_to_next_ball <= 0:
@@ -275,13 +281,16 @@ def add_circle(mass, radius, xpos, ypos, friction, index):
 
 
 # adds a square to the screen with changeable mass, width, height, x and y positions, and friction coef
-def add_square(mass, width, height, xpos, ypos, friction):
+def add_square(mass, width, height, xpos, ypos, friction, index):
     inertia = pymunk.moment_for_box(mass, (width, height))
     body = pymunk.Body(mass, inertia)
     body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Poly.create_box(body, (width, height), 0)  # adding a radius (third param) bevels corners of poly
     shape.friction = friction
     space.add(body, shape)
+
+    squares.insert(index, shape)
+
 
 
 # adds a right triangle to the screen with changeable mass, degree, x and y position, and friction coef
