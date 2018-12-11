@@ -42,7 +42,8 @@ import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
 
-object_draging = False #object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up).
+object_draging = False #object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up)
+square_draging = False #refers to square object being dragged
 runonce = False
 
 #testing
@@ -63,6 +64,7 @@ def main():
     global numGrav
     numGrav = 1
     global balls
+    global squares
     global space
 
     pygame.init()
@@ -79,6 +81,7 @@ def main():
     draw_options.flags = draw_options.flags ^ pymunk.pygame_util.DrawOptions.DRAW_COLLISION_POINTS
     ## Balls
     balls = []
+    squares = []
 
     ### walls
     static_lines = [pymunk.Segment(space.static_body, (11.0, 280.0), (407.0, 246.0), 0.0)
@@ -97,6 +100,7 @@ def main():
 
     while running:
         global ball
+        global square
         global index_dragging
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -117,6 +121,7 @@ def main():
                     #
                     # 5 - scroll down
                     index = -1
+                    squareIndex = -1
                     for ball in balls:
                         surface = pygame.Surface(screen.get_size())
                         # print("pos")
@@ -131,6 +136,15 @@ def main():
                         index += 1
                         #if (ball.body.position.x, 600- ball.body.position.y == mouse_x, mouse_y):
                         if (math.sqrt(math.pow(ball.body.position.x - mouse_x, 2) + math.pow((600-ball.body.position.y) - mouse_y, 2))) <= 25:
+                            index_dragging = index  # saves the index of the ball that is clicked
+                            space.gravity = (0, 0)
+                            object_draging = True
+                            # mouse_x, mouse_y = event.pos
+
+                    for square in squares:
+                        mouse_x, mouse_y = event.pos
+                        squareIndex += 1
+                        if square.body.position.x:
                             index_dragging = index  # saves the index of the ball that is clicked
                             space.gravity = (0, 0)
                             object_draging = True
@@ -218,6 +232,18 @@ def main():
         space.debug_draw(draw_options)
         rect = Rect(150, 450, 100, 50)
         pygame.draw.rect(screen, THECOLORS["green"], (150, 450, 100, 50))
+
+        #Draws text onto the rectangle GO button
+        def text_objects(text, font):
+            textSurface = font.render(text, True, THECOLORS["black"])
+            return textSurface, textSurface.get_rect()
+
+        smallText = pygame.font.Font("freesansbold.ttf", 20)
+        textSurf, textRect = text_objects("GO!", smallText)
+        textRect.center = ((150 + (100 / 2)), (450 + (50 / 2)))
+        screen.blit(textSurf, textRect)
+
+
 
         balls_to_remove = []
         for ball in balls:
