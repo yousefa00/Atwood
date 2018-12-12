@@ -147,10 +147,10 @@ def main():
                         mouse_x, mouse_y = event.pos
                         squareIndex += 1
                         if mouse_x >= square.body.position.x and mouse_x <= square.body.position.x + 50 and mouse_y >= (600-square.body.position.y) and mouse_y <= (600-square.body.position.y) + 50:
-                            square_index_dragging = index  # saves the index of the ball that is clicked
+                            square_index_dragging = squareIndex  # saves the index of the ball that is clicked
                             space.gravity = (0, 0)
                             square_draging = True
-                            # mouse_x, mouse_y = event.pos
+                            #mouse_x, mouse_y = event.pos
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
@@ -168,8 +168,15 @@ def main():
                     balls.remove(balls[index_dragging])
                     add_circle(0.1, 25, mouse_x, mouse_y, 0.5, index_dragging)
 
-                #if square_draging:
-
+                if square_draging:
+                    mouse_x, mouse_y = event.pos
+                    offset_x = squares[square_index_dragging].body.position.x - mouse_x
+                    offset_y = squares[square_index_dragging].body.position.y - mouse_y
+                    squares[square_index_dragging].body.position.x = mouse_x + offset_x
+                    squares[square_index_dragging].body.position.y = mouse_y + offset_y
+                    space.remove(squares[square_index_dragging])
+                    squares.remove(squares[square_index_dragging])
+                    add_square(0.1, 50.0, 50.0, mouse_x, mouse_y, 0.5, square_index_dragging)
 
 
             # Interactive stuff ends here
@@ -185,13 +192,14 @@ def main():
 
             global runonce
             if event.type == MOUSEBUTTONDOWN:
-                if runonce is False and (object_draging is False):
+                if runonce is False and (object_draging is False) and square_draging is False:
                     pos = pygame.mouse.get_pos()
                     final = str(pos)
                     x = final[final.find('(') + len('('):final.rfind(',')]
                     y = final[final.find(',') + len(','):final.rfind(')')]
                     add_circle(0.1, 25, x, y, 0.5, len(balls))
                 mouse_pos = mouse.get_pos()
+
                 x = pygame.mouse.get_pos()[0]
                 y = pygame.mouse.get_pos()[1]
 
