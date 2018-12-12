@@ -84,11 +84,12 @@ def main():
     squares = []
 
     ### walls
-    static_lines = [pymunk.Segment(space.static_body, (0, 5), (600, 5), 0)
-        , pymunk.Segment(space.static_body, (595, 600), (595, 0), 0)
+    static_lines = [pymunk.Segment(space.static_body, (0, 5), (600, 5), 5)
+        , pymunk.Segment(space.static_body, (595, 600), (595, 0), 5), pymunk.Segment(space.static_body, (0, 596), (600, 596), 5),
+                    pymunk.Segment(space.static_body, (4, 0), (4, 600), 5)
                     ]
     for l in static_lines:
-        l.friction = 0.5
+        l.friction = .5
     space.add(static_lines)
 
     # ticks_to_next_ball = 10
@@ -149,40 +150,22 @@ def main():
                             space.gravity = (0, 0)
                             object_draging = True
                             # mouse_x, mouse_y = event.pos
-                    if event.type == MOUSEBUTTONDOWN:
-                        mouse_pos = mouse.get_pos()
-                        x = pygame.mouse.get_pos()[0]
-                        y = pygame.mouse.get_pos()[1]
-                        if rect.collidepoint(mouse_pos):
-                            if numGrav == 1:
-                                space.gravity = (0.0, -980.0)  # sets the gravity of the space
-                                numGrav *= -1
-                            else:
-                                space.gravity = (0.0, 0)  # sets the gravity of the space
-                                numGrav *= -1
+
+                    mouse_pos = mouse.get_pos()
+                    x = pygame.mouse.get_pos()[0]
+                    y = pygame.mouse.get_pos()[1]
+                    if rect.collidepoint(mouse_pos):
+                        if space.gravity == (0.0, 0):
+                            space.gravity = (0.0, -980.0)  # sets the gravity of the space
                         else:
-                            if runonce is False and (object_draging is False):
-                                pos = pygame.mouse.get_pos()
-                                final = str(pos)
-                                x = final[final.find('(') + len('('):final.rfind(',')]
-                                y = final[final.find(',') + len(','):final.rfind(')')]
-                                add_circle(0.1, 25, x, y, 0.5)
-                            for ball in balls:
-                                surface = pygame.Surface(screen.get_size())
-                                # print("pos")
-                                # print(ball.body.position)
-                                # print(pymunk.pygame_util.get_mouse_pos(surface))
-                                # mouse_x, mouse_y = event.pos
-                                #pygame.mouse.get_pos().
-                                #body.position = int(xpos), (600 - int(ypos))
-                                #if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
-                                #if (600- ball.body.position.y) == mouse_y && :
-                                mouse_x, mouse_y = event.pos
-                                #if (ball.body.position.x, 600- ball.body.position.y == mouse_x, mouse_y):
-                                if (math.sqrt(math.pow(ball.body.position.x - mouse_x, 2) + math.pow((600-ball.body.position.y) - mouse_y, 2))) <= 25:
-                                    object_draging = True
-                                    # mouse_x, mouse_y = event.pos
-                                    # mouse_x, mouse_y = event.pos
+                            space.gravity = (0.0, 0)  # sets the gravity of the space
+                    else:
+                        if runonce is False and (object_draging is False):
+                            pos = pygame.mouse.get_pos()
+                            final = str(pos)
+                            x = final[final.find('(') + len('('):final.rfind(',')]
+                            y = final[final.find(',') + len(','):final.rfind(')')]
+                            add_circle(0.1, 25, x, y, 0.5, len(balls))
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
@@ -246,8 +229,8 @@ def main():
 
         ### Draw stuff
         space.debug_draw(draw_options)
-        rect = Rect(150, 450, 100, 50)
-        pygame.draw.rect(screen, THECOLORS["green"], (150, 450, 100, 50))
+        rect = Rect(450, 50, 100, 50)
+        pygame.draw.rect(screen, THECOLORS["green"], (450, 50, 100, 50))
 
         # balls_to_remove = []
         # for ball in balls:
@@ -262,17 +245,8 @@ def main():
 
         smallText = pygame.font.Font("freesansbold.ttf", 20)
         textSurf, textRect = text_objects("GO!", smallText)
-        textRect.center = ((150 + (100 / 2)), (450 + (50 / 2)))
+        textRect.center = ((450 + (100 / 2)), (50 + (50 / 2)))
         screen.blit(textSurf, textRect)
-
-
-
-        balls_to_remove = []
-        for ball in balls:
-            if ball.body.position.y < 200: balls_to_remove.append(ball)
-        for ball in balls_to_remove:
-            space.remove(ball, ball.body)
-            balls.remove(ball)
 
         ### Update physics
         dt = 1.0 / 60.0
@@ -288,7 +262,7 @@ def main():
 #adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
 def add_circle(mass, radius, xpos, ypos, friction, index):
     inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
-    body = pymunk.Body(mass, inertia)
+    body = pymunk.Body(mass*5, inertia)
     body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Circle(body, radius, (0, 0))
     shape.friction = friction
@@ -299,7 +273,7 @@ def add_circle(mass, radius, xpos, ypos, friction, index):
 # adds a square to the screen with changeable mass, width, height, x and y positions, and friction coef
 def add_square(mass, width, height, xpos, ypos, friction):
     inertia = pymunk.moment_for_box(mass, (width, height))
-    body = pymunk.Body(mass, inertia)
+    body = pymunk.Body(mass*5, inertia)
     body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Poly.create_box(body, (width, height), 0)  # adding a radius (third param) bevels corners of poly
     shape.friction = friction
@@ -310,10 +284,10 @@ def add_square(mass, width, height, xpos, ypos, friction):
 def add_ramp(mass, degree, xpos, ypos, friction):
     tan = math.tan((degree * (math.pi / 180)))
     height = 100 / tan  #height adjusts to make degree applicable
-    inertia = pymunk.moment_for_poly(mass, [(0, 0), (100, 0), (0, height)], (0, 0), 0)  # the length is always 100
+    inertia = pymunk.moment_for_poly(mass*50, [(0, height), (100, 0), (0, 0)], (0, 0), 0)  # the length is always 100
     body = pymunk.Body(mass, inertia)
     body.position = int(xpos), (600 - int(ypos))
-    shape = pymunk.Poly(body, [(0, 0), (100, 0), (0, height)])  # adding a radius (a third param) bevels corners of poly
+    shape = pymunk.Poly(body, [(0, height), (100, 0), (0, 0)])  # adding a radius (a third param) bevels corners of poly
     shape.friction = friction
     space.add(body, shape)
 
