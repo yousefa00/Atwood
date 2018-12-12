@@ -42,8 +42,9 @@ import pymunk
 from pymunk import Vec2d
 import pymunk.pygame_util
 
-object_draging = False #object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up)
-square_draging = False #refers to square object being dragged
+object_draging = False  # object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up)
+square_draging = False  # refers to square object being dragged
+ramp_dragging = False  # refers to ramp object being dragged
 runonce = False
 
 #testing
@@ -61,11 +62,13 @@ def main():
     global shape_to_remove
     global object_draging
     global square_draging
+    global ramp_dragging
     global screen
     global numGrav
     numGrav = 1
     global balls
     global squares
+    global ramps
     global space
 
     pygame.init()
@@ -83,6 +86,7 @@ def main():
     ## Balls
     balls = []
     squares = []
+    ramps = []
 
     ### walls
     static_lines = [pymunk.Segment(space.static_body, (0, 5), (600, 5), 5)
@@ -105,6 +109,7 @@ def main():
         global square
         global index_dragging
         global square_index_dragging
+        global ramp_index_dragging
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
@@ -125,24 +130,15 @@ def main():
                     # 5 - scroll down
                     index = -1
                     squareIndex = -1
+                    ramp_index = -1
                     for ball in balls:
                         surface = pygame.Surface(screen.get_size())
-                        # print("pos")
-                        # print(ball.body.position)
-                        # print(pymunk.pygame_util.get_mouse_pos(surface))
-                        # mouse_x, mouse_y = event.pos
-                        #pygame.mouse.get_pos().
-                        #body.position = int(xpos), (600 - int(ypos))
-                        #if ball.body.position == pymunk.pygame_util.get_mouse_pos(surface):
-                        #if (600- ball.body.position.y) == mouse_y && :
                         mouse_x, mouse_y = event.pos
                         index += 1
-                        #if (ball.body.position.x, 600- ball.body.position.y == mouse_x, mouse_y):
                         if (math.sqrt(math.pow(ball.body.position.x - mouse_x, 2) + math.pow((600-ball.body.position.y) - mouse_y, 2))) <= 25:
                             index_dragging = index  # saves the index of the ball that is clicked
                             space.gravity = (0, 0)
                             object_draging = True
-                            # mouse_x, mouse_y = event.pos
 
                     for square in squares:
                         mouse_x, mouse_y = event.pos
@@ -152,6 +148,14 @@ def main():
                             space.gravity = (0, 0)
                             square_draging = True
                             #mouse_x, mouse_y = event.pos
+
+                    for ramp in ramps:
+                        mouse_x, mouse_y = event.pos
+                        ramp_index += 1
+                        if mouse_x == ramp.body.position.x:
+                            ramp_index_dragging = ramp_index
+                            space.gravity = (0, 0)
+                            ramp_dragging = True
 
                     mouse_pos = mouse.get_pos()
                     x = pygame.mouse.get_pos()[0]
@@ -173,6 +177,7 @@ def main():
                 if event.button == 1:
                     object_draging = False
                     square_draging = False
+                    ramp_dragging = False
 
             elif event.type == pygame.MOUSEMOTION:
                 if object_draging:
@@ -195,6 +200,16 @@ def main():
                     squares.remove(squares[square_index_dragging])
                     add_square(0.1, 50.0, 50.0, mouse_x, mouse_y, 0.5, square_index_dragging)
 
+                if ramp_dragging:
+                    mouse_x, mouse_y = event.pos
+                    offset_x = ramps[ramp_index_dragging].body.position.x - mouse_x
+                    offset_y = ramps[ramp_index_dragging].body.position.y - mouse_y
+                    ramps[ramp_index_dragging].body.position.x = mouse_x + offset_x
+                    ramps[ramp_index_dragging].body.position.y = mouse_y + offset_y
+                    space.remove(ramps[ramp_index_dragging])
+                    ramps.remove(ramps[ramp_index_dragging])
+                    add_ramp(100, 45, mouse_x, mouse_y, 0.1, ramp_index_dragging)
+
 
             # Interactive stuff ends here
 
@@ -205,7 +220,7 @@ def main():
                 final = str(pos)
                 x = final[final.find('(') + len('('):final.rfind(',')]
                 y = final[final.find(',') + len(','):final.rfind(')')]
-                add_ramp(100, 45, x, y, 0.1)
+                add_ramp(100, 45, x, y, 0.1, len(ramps))
 
             # global runonce
 
@@ -289,9 +304,8 @@ def add_square(mass, width, height, xpos, ypos, friction, index):
     squares.insert(index, shape)
 
 
-
 # adds a right triangle to the screen with changeable mass, degree, x and y position, and friction coef
-def add_ramp(mass, degree, xpos, ypos, friction):
+def add_ramp(mass, degree, xpos, ypos, friction, index):
     tan = math.tan((degree * (math.pi / 180)))
     height = 100 / tan  #height adjusts to make degree applicable
     inertia = pymunk.moment_for_poly(mass*50, [(0, height), (100, 0), (0, 0)], (0, 0), 0)  # the length is always 100
@@ -300,6 +314,8 @@ def add_ramp(mass, degree, xpos, ypos, friction):
     shape = pymunk.Poly(body, [(0, height), (100, 0), (0, 0)])  # adding a radius (a third param) bevels corners of poly
     shape.friction = friction
     space.add(body, shape)
+
+    ramps.insert(index, shape)
 
 
 if __name__ == '__main__':
