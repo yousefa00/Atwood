@@ -221,6 +221,12 @@ def main():
                 x = final[final.find('(') + len('('):final.rfind(',')]
                 y = final[final.find(',') + len(','):final.rfind(')')]
                 add_ramp(100, 45, x, y, 0.1, len(ramps))
+            elif event.type == KEYDOWN and event.key == K_d:
+                pos = pygame.mouse.get_pos()
+                final = str(pos)
+                x = final[final.find('(') + len('('):final.rfind(',')]
+                y = final[final.find(',') + len(','):final.rfind(')')]
+                add_ramp_flipped(100, 45, x, y, 0.1, len(ramps))
 
             # global runonce
 
@@ -312,6 +318,20 @@ def add_ramp(mass, degree, xpos, ypos, friction, index):
     body = pymunk.Body(mass, inertia)
     body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Poly(body, [(0, height), (100, 0), (0, 0)])  # adding a radius (a third param) bevels corners of poly
+    shape.friction = friction
+    space.add(body, shape)
+
+    ramps.insert(index, shape)
+
+
+# adds a right triangle to the screen with changeable mass, degree, x and y position, and friction coef
+def add_ramp_flipped(mass, degree, xpos, ypos, friction, index):
+    tan = math.tan((degree * (math.pi / 180)))
+    height = 100 / tan  #height adjusts to make degree applicable
+    inertia = pymunk.moment_for_poly(mass*50, [(100, height), (100, 0), (0, 0)], (0, 0), 0)  # the length is always 100
+    body = pymunk.Body(mass, inertia)
+    body.position = int(xpos), (600 - int(ypos))
+    shape = pymunk.Poly(body, [(100, height), (100, 0), (0, 0)])  # adding a radius (a third param) bevels corners of poly
     shape.friction = friction
     space.add(body, shape)
 
