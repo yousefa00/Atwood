@@ -259,16 +259,17 @@ def main():
         #     balls.append(shape)
 
         ### Clear screen
-        screen.fill(THECOLORS["white"])
+        background = (160, 194, 205,)
+        screen.fill(background) #Dull blueish color
 
         ### Draw stuff
         space.debug_draw(draw_options)
         rect = Rect(450, 50, 100, 50)
-        pygame.draw.rect(screen, THECOLORS["green"], (450, 50, 100, 50))
+        pygame.draw.rect(screen, THECOLORS["navy"], (450, 50, 100, 50))
 
         #Draws text onto the rectangle GO button
         def text_objects(text, font):
-            textSurface = font.render(text, True, THECOLORS["black"])
+            textSurface = font.render(text, True, THECOLORS["white"])
             return textSurface, textSurface.get_rect()
 
         smallText = pygame.font.Font("freesansbold.ttf", 20)
@@ -284,7 +285,8 @@ def main():
         ### Flip screen
         pygame.display.flip()
         clock.tick(50)
-        pygame.display.set_caption("fps: " + str(clock.get_fps()))
+        #pygame.display.set_caption("fps: " + str(clock.get_fps()))
+        pygame.display.set_caption("ATWOOD SIMULATION")
 
 
 #adds a circle to the screen with changeabe mass, radius, x and y position, and friction coef
@@ -293,6 +295,7 @@ def add_circle(mass, radius, xpos, ypos, friction, index):
     body = pymunk.Body(mass*5, inertia)
     body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Circle(body, radius, (0, 0))
+    shape.color = pygame.color.THECOLORS["black"]
     shape.friction = friction
     space.add(body, shape)
     balls.insert(index, shape)
@@ -304,6 +307,7 @@ def add_square(mass, width, height, xpos, ypos, friction, index):
     body = pymunk.Body(mass*5, inertia)
     body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Poly.create_box(body, (width, height), 0)  # adding a radius (third param) bevels corners of poly
+    shape.color = pygame.color.THECOLORS["black"]
     shape.friction = friction
     space.add(body, shape)
 
@@ -318,6 +322,7 @@ def add_ramp(mass, degree, xpos, ypos, friction, index):
     body = pymunk.Body(mass, inertia)
     body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Poly(body, [(0, height), (100, 0), (0, 0)])  # adding a radius (a third param) bevels corners of poly
+    shape.color = pygame.color.THECOLORS["black"]
     shape.friction = friction
     space.add(body, shape)
 
@@ -332,6 +337,7 @@ def add_ramp_flipped(mass, degree, xpos, ypos, friction, index):
     body = pymunk.Body(mass, inertia)
     body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Poly(body, [(100, height), (100, 0), (0, 0)])  # adding a radius (a third param) bevels corners of poly
+    shape.color = pygame.color.THECOLORS["black"]
     shape.friction = friction
     space.add(body, shape)
 
