@@ -69,6 +69,7 @@ def main():
     global balls
     global squares
     global ramps
+    global flipped_ramps
     global space
 
     pygame.init()
@@ -87,6 +88,7 @@ def main():
     balls = []
     squares = []
     ramps = []
+    flipped_ramps = []
 
     ### walls
     static_lines = [pymunk.Segment(space.static_body, (0, 5), (600, 5), 5)
@@ -110,6 +112,7 @@ def main():
         global index_dragging
         global square_index_dragging
         global ramp_index_dragging
+        global flipped_ramp_dragging
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
@@ -152,7 +155,9 @@ def main():
                     for ramp in ramps:
                         mouse_x, mouse_y = event.pos
                         ramp_index += 1
-                        if mouse_x == ramp.body.position.x:
+                        print(ramp.body.position.x)
+                        print((600-ramp.body.position.y))
+                        if mouse_x >= ramp.body.position.x and mouse_x <= ramp.body.position.x + 50 and mouse_y <= (600 - ramp.body.position.y) and mouse_y + 50 >= (600-ramp.body.position.y):
                             ramp_index_dragging = ramp_index
                             space.gravity = (0, 0)
                             ramp_dragging = True
@@ -166,7 +171,7 @@ def main():
                         else:
                             space.gravity = (0.0, 0)  # sets the gravity of the space
                     else:
-                        if runonce is False and (object_draging is False):
+                        if runonce is False and (object_draging is False) and (square_draging is False) and (ramp_dragging is False):
                             pos = pygame.mouse.get_pos()
                             final = str(pos)
                             x = final[final.find('(') + len('('):final.rfind(',')]
@@ -318,7 +323,7 @@ def add_square(mass, width, height, xpos, ypos, friction, index):
 def add_ramp(mass, degree, xpos, ypos, friction, index):
     tan = math.tan((degree * (math.pi / 180)))
     height = 100 / tan  #height adjusts to make degree applicable
-    inertia = pymunk.moment_for_poly(mass*50, [(0, height), (100, 0), (0, 0)], (0, 0), 0)  # the length is always 100
+    inertia = pymunk.moment_for_poly(pymunk.inf, [(0, height), (100, 0), (0, 0)], (0, 0), 0)  # the length is always 100
     body = pymunk.Body(mass, inertia)
     body.position = int(xpos), (600 - int(ypos))
     shape = pymunk.Poly(body, [(0, height), (100, 0), (0, 0)])  # adding a radius (a third param) bevels corners of poly
@@ -333,15 +338,15 @@ def add_ramp(mass, degree, xpos, ypos, friction, index):
 def add_ramp_flipped(mass, degree, xpos, ypos, friction, index):
     tan = math.tan((degree * (math.pi / 180)))
     height = 100 / tan  #height adjusts to make degree applicable
-    inertia = pymunk.moment_for_poly(mass*50, [(100, height), (100, 0), (0, 0)], (0, 0), 0)  # the length is always 100
+    inertia = pymunk.moment_for_poly(pymunk.inf, [(0, height), (-100, 0), (0, 0)], (0, 0), 0)  # the length is always 100
     body = pymunk.Body(mass, inertia)
     body.position = int(xpos), (600 - int(ypos))
-    shape = pymunk.Poly(body, [(100, height), (100, 0), (0, 0)])  # adding a radius (a third param) bevels corners of poly
+    shape = pymunk.Poly(body, [(0, height), (-100, 0), (0, 0)])  # adding a radius (a third param) bevels corners of poly
     shape.color = pygame.color.THECOLORS["black"]
     shape.friction = friction
     space.add(body, shape)
 
-    ramps.insert(index, shape)
+    flipped_ramps.insert(index, shape)
 
 
 if __name__ == '__main__':
