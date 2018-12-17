@@ -45,6 +45,7 @@ import pymunk.pygame_util
 object_draging = False  # object refers to any of the circles being dropped. This boolean indicates whether object is being dragged (mouse down) or not (mouse up)
 square_draging = False  # refers to square object being dragged
 ramp_dragging = False  # refers to ramp object being dragged
+flipped_ramp_dragging = False
 runonce = False
 
 #testing
@@ -63,6 +64,7 @@ def main():
     global object_draging
     global square_draging
     global ramp_dragging
+    global flipped_ramp_dragging
     global screen
     global numGrav
     numGrav = 1
@@ -112,7 +114,7 @@ def main():
         global index_dragging
         global square_index_dragging
         global ramp_index_dragging
-        global flipped_ramp_dragging
+        global flipped_ramp_index_dragging
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
@@ -134,6 +136,7 @@ def main():
                     index = -1
                     squareIndex = -1
                     ramp_index = -1
+                    flipped_ramp_index = -1
                     for ball in balls:
                         surface = pygame.Surface(screen.get_size())
                         mouse_x, mouse_y = event.pos
@@ -146,7 +149,7 @@ def main():
                     for square in squares:
                         mouse_x, mouse_y = event.pos
                         squareIndex += 1
-                        if mouse_x >= square.body.position.x and mouse_x <= square.body.position.x + 50 and mouse_y >= (600-square.body.position.y) and mouse_y <= (600-square.body.position.y) + 50:
+                        if mouse_x + 50 >= square.body.position.x and mouse_x <= square.body.position.x + 50 and mouse_y + 50 >= (600-square.body.position.y) and mouse_y <= (600-square.body.position.y) + 50:
                             square_index_dragging = squareIndex  # saves the index of the ball that is clicked
                             space.gravity = (0, 0)
                             square_draging = True
@@ -155,12 +158,20 @@ def main():
                     for ramp in ramps:
                         mouse_x, mouse_y = event.pos
                         ramp_index += 1
-                        print(ramp.body.position.x)
-                        print((600-ramp.body.position.y))
                         if mouse_x >= ramp.body.position.x and mouse_x <= ramp.body.position.x + 50 and mouse_y <= (600 - ramp.body.position.y) and mouse_y + 50 >= (600-ramp.body.position.y):
                             ramp_index_dragging = ramp_index
                             space.gravity = (0, 0)
                             ramp_dragging = True
+
+                    for ramp in flipped_ramps:
+                        mouse_x, mouse_y = event.pos
+                        flipped_ramp_index += 1
+                        print(ramp.body.position.x)
+                        print((600-ramp.body.position.y))
+                        if mouse_x <= ramp.body.position.x and mouse_x + 50 >= ramp.body.position.x and mouse_y <= (600 - ramp.body.position.y) and mouse_y + 50 >= (600-ramp.body.position.y):
+                            flipped_ramp_index_dragging = flipped_ramp_index
+                            space.gravity = (0, 0)
+                            flipped_ramp_dragging = True
 
                     mouse_pos = mouse.get_pos()
                     x = pygame.mouse.get_pos()[0]
@@ -171,7 +182,7 @@ def main():
                         else:
                             space.gravity = (0.0, 0)  # sets the gravity of the space
                     else:
-                        if runonce is False and (object_draging is False) and (square_draging is False) and (ramp_dragging is False):
+                        if runonce is False and (object_draging is False) and (square_draging is False) and (ramp_dragging is False) and (flipped_ramp_dragging is False):
                             pos = pygame.mouse.get_pos()
                             final = str(pos)
                             x = final[final.find('(') + len('('):final.rfind(',')]
@@ -183,6 +194,7 @@ def main():
                     object_draging = False
                     square_draging = False
                     ramp_dragging = False
+                    flipped_ramp_dragging = False
 
             elif event.type == pygame.MOUSEMOTION:
                 if object_draging:
@@ -214,6 +226,16 @@ def main():
                     space.remove(ramps[ramp_index_dragging])
                     ramps.remove(ramps[ramp_index_dragging])
                     add_ramp(100, 45, mouse_x, mouse_y, 0.1, ramp_index_dragging)
+
+                if flipped_ramp_dragging:
+                    mouse_x, mouse_y = event.pos
+                    offset_x = flipped_ramps[flipped_ramp_index_dragging].body.position.x - mouse_x
+                    offset_y = flipped_ramps[flipped_ramp_index_dragging].body.position.y - mouse_y
+                    flipped_ramps[flipped_ramp_index_dragging].body.position.x = mouse_x + offset_x
+                    flipped_ramps[flipped_ramp_index_dragging].body.position.y = mouse_y + offset_y
+                    space.remove(flipped_ramps[flipped_ramp_index_dragging])
+                    flipped_ramps.remove(flipped_ramps[flipped_ramp_index_dragging])
+                    add_ramp_flipped(100, 45, mouse_x, mouse_y, 0.1, flipped_ramp_index_dragging)
 
 
             # Interactive stuff ends here
